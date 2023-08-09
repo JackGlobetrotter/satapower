@@ -1,19 +1,26 @@
 #include <Arduino.h>
+#include<avr/wdt.h>
 
-#define BAUD_RATE 115200
+#define BAUD_RATE 9600
 #define OUT12V 7
 #define OUT5V 8
 
 String Input = "";
+boolean ON = false;
 
 void setup()
 {
   pinMode(OUT12V, OUTPUT);
   pinMode(OUT5V, OUTPUT);
+  digitalWrite(OUT12V, !ON); 
+  digitalWrite(OUT5V, !ON); 
+
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, 0);
+  digitalWrite(LED_BUILTIN, ON);
 
   Serial.begin(BAUD_RATE);
+
+  wdt_enable(WDTO_4S);
 }
 
 void loop()
@@ -25,19 +32,27 @@ void loop()
     Input.toUpperCase();
     if (Input == "ON")
     {
-      digitalWrite(OUT12V, 1);
-      digitalWrite(OUT5V, 1);
-      digitalWrite(LED_BUILTIN, 1);
+      ON=true;
+      Serial.read();
+      Serial.flush();
     }
     else if (Input == "OFF")
     {
-      digitalWrite(OUT12V, 0);
-      digitalWrite(OUT5V, 0);
-      digitalWrite(LED_BUILTIN, 0);
+      ON=false;
+      Serial.read();
+      Serial.flush();
     }
     else
+    {
       Serial.println("ERROR, unknown command");
+      Serial.read();
+      Serial.flush();
+    }
+    digitalWrite(OUT12V, !ON);
+    digitalWrite(OUT5V, !ON);
+    digitalWrite(LED_BUILTIN, ON);
+    
   }
-
+  wdt_reset(); 
 
 }
